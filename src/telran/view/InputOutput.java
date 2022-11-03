@@ -55,11 +55,14 @@ public interface InputOutput {
 	default long readLong(String prompt, String errorPrompt) {
 		return readObject(prompt, errorPrompt,Long::parseLong);
 	}
+	default double readDouble(String prompt, String errorPrompt) {
+		return readObject(prompt, errorPrompt,Double::parseDouble);
+	}
 	default String readPredicate(String prompt, String errorPrompt, 
 			Predicate<String> predicate) {
 		return readObject(prompt, errorPrompt, s -> {
 			if (!predicate.test(s)) {
-				throw new IllegalArgumentException();
+				throw new RuntimeException();
 			}
 			return s;
 		});

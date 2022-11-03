@@ -67,7 +67,7 @@ class InputOutputTest {
 		 
 	 }
 	 @Test
-	 @Disabled
+	 //@Disabled
 	 void readDateTest() {
 		 String format = "d/M/y";
 		 LocalDate birthdateAS = LocalDate.of(1799, 6, 6);
