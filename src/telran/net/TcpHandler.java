@@ -30,8 +30,7 @@ public TcpHandler(String hostname, int port) throws Exception{
 
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
-		
+		socket.close();
 	}
 
 }
