@@ -18,6 +18,7 @@ public class CalculatorApp {
 		try {
 			Calculator calculator =
 					new NetCalculatorProxy(new TcpHandler("localhost", PORT));
+//			Calculator calculator = new CalculatorImpl();
 			Item[] items = CalculatorMenu.getCalculatorItems(calculator);
 			Item exit = Item.of("Exit", io -> {
 				if (calculator instanceof Closeable) {
