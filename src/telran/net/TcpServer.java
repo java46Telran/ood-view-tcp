@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.io.*;
 
 public class TcpServer implements Runnable {
-	private static final int DEFAULT_N_THREADS = 5;
+	private  static final int DEFAULT_N_THREADS = 5;
 	private static final int ACCEPT_TIME_OUT = 100;
 	private ServerSocket serverSocket;
 	private int port;
@@ -15,7 +15,7 @@ public class TcpServer implements Runnable {
 	private ExecutorService executor;
 	volatile boolean isShutdown = false;
 	int nThreads;
-	AtomicInteger inactiveClientsCounter = new AtomicInteger(0);
+	AtomicInteger clientsCounter = new AtomicInteger(0);
 
 	public TcpServer(int port, ApplProtocol protocol, int nThreads) throws Exception {
 		this.port = port;
@@ -37,7 +37,7 @@ public class TcpServer implements Runnable {
 		while (!isShutdown) {
 			try {
 				Socket socket = serverSocket.accept();
-				inactiveClientsCounter.getAndIncrement();
+				clientsCounter.getAndIncrement();
 				TcpClientServer clientServer = new TcpClientServer(socket, protocol, this);
 				executor.execute(clientServer);
 			} catch (SocketTimeoutException e) {
