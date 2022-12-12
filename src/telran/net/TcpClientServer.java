@@ -10,6 +10,8 @@ public class TcpClientServer implements Runnable {
 	private ObjectOutputStream output;
 	private ApplProtocol protocol;
 	private TcpServer tcpServer;
+	private static final int CLIENT_IDLE_TIMEOUT = 60000;
+	private int idlePeriod;
 
 	public TcpClientServer(Socket socket, ApplProtocol protocol, TcpServer tcpServer) throws Exception {
 		this.protocol = protocol;
@@ -22,16 +24,20 @@ public class TcpClientServer implements Runnable {
 
 	@Override
 	public void run() {
-
+		tcpServer.inactiveClientsCounter.getAndDecrement();
 		while (!tcpServer.isShutdown) {
 			try {
 				Request request = (Request) input.readObject();
+				idlePeriod = 0;
 				Response response = protocol.getResponse(request);
 				output.writeObject(response);
 			} catch (SocketTimeoutException e) {
-				
-			}
-			catch (EOFException e) {
+				idlePeriod += READ_TIMEOUT;
+				if (idlePeriod > CLIENT_IDLE_TIMEOUT &&
+						tcpServer.inactiveClientsCounter.get() > 0) {
+					break;
+				}
+			} catch (EOFException e) {
 				System.out.println("client closed connection");
 				break;
 			} catch (Exception e) {
@@ -39,13 +45,18 @@ public class TcpClientServer implements Runnable {
 				break;
 			}
 		}
-		if(tcpServer.isShutdown) {
-			System.out.println("client connection closed by server shutdown");
+		if (tcpServer.isShutdown | idlePeriod > CLIENT_IDLE_TIMEOUT) {
 			try {
 				socket.close();
 			} catch (IOException e1) {
-				
+
 			}
+			if (tcpServer.isShutdown) {
+				System.out.println("client connection closed by server shutdown");
+			} else {
+				System.out.println("client connection closed due to Idle Timeout");
+			}
+
 		}
 	}
 

@@ -3,6 +3,7 @@ package telran.net;
 import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.io.*;
 
 public class TcpServer implements Runnable {
@@ -13,10 +14,13 @@ public class TcpServer implements Runnable {
 	private ApplProtocol protocol;
 	private ExecutorService executor;
 	volatile boolean isShutdown = false;
+	int nThreads;
+	AtomicInteger inactiveClientsCounter = new AtomicInteger(0);
 
 	public TcpServer(int port, ApplProtocol protocol, int nThreads) throws Exception {
 		this.port = port;
 		this.protocol = protocol;
+		this.nThreads = nThreads;
 		executor = Executors.newFixedThreadPool(nThreads);
 		serverSocket = new ServerSocket(port);
 		serverSocket.setSoTimeout(ACCEPT_TIME_OUT);
@@ -33,6 +37,7 @@ public class TcpServer implements Runnable {
 		while (!isShutdown) {
 			try {
 				Socket socket = serverSocket.accept();
+				inactiveClientsCounter.getAndIncrement();
 				TcpClientServer clientServer = new TcpClientServer(socket, protocol, this);
 				executor.execute(clientServer);
 			} catch (SocketTimeoutException e) {
